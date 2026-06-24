@@ -1,0 +1,394 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);color:var(--color-text-primary);background:transparent}
+.app{max-width:680px;margin:0 auto;padding:1rem 0}
+.header{display:flex;align-items:center;gap:12px;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:0.5px solid var(--color-border-tertiary)}
+.avatar{width:48px;height:48px;border-radius:50%;background:#E1F5EE;display:flex;align-items:center;justify-content:center;font-size:22px}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1.5rem}
+.stat-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:.75rem 1rem}
+.stat-card .lbl{font-size:12px;color:var(--color-text-secondary);margin-bottom:4px}
+.stat-card .val{font-size:18px;font-weight:500}
+.tabs{display:flex;gap:4px;margin-bottom:1.25rem;border-bottom:0.5px solid var(--color-border-tertiary);padding-bottom:0}
+.tab{padding:.5rem 1rem;font-size:14px;cursor:pointer;border:none;background:transparent;color:var(--color-text-secondary);border-bottom:2px solid transparent;margin-bottom:-1px;border-radius:0}
+.tab.active{color:var(--color-text-primary);border-bottom-color:var(--color-text-primary);font-weight:500}
+.tab:hover{color:var(--color-text-primary)}
+.pane{display:none}.pane.active{display:block}
+.hunt-area{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.5rem;text-align:center;margin-bottom:1rem}
+.hunt-btn{display:inline-flex;align-items:center;gap:8px;padding:.75rem 2rem;font-size:16px;font-weight:500;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);cursor:pointer;background:var(--color-background-primary);color:var(--color-text-primary);transition:background .15s}
+.hunt-btn:hover{background:var(--color-background-secondary)}
+.hunt-btn:active{transform:scale(.98)}
+.hunt-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.cooldown-bar{height:4px;background:var(--color-background-secondary);border-radius:2px;margin-top:1rem;overflow:hidden}
+.cooldown-fill{height:100%;background:#1D9E75;border-radius:2px;transition:width .5s}
+.result-box{padding:1rem 1.25rem;border-radius:var(--border-radius-md);margin-top:1rem;border:0.5px solid var(--color-border-tertiary);text-align:left}
+.result-box.win{border-color:#1D9E75;background:#E1F5EE}
+.result-box.lose{border-color:var(--color-border-secondary)}
+.result-emoji{font-size:32px;display:block;margin-bottom:.5rem}
+.result-name{font-size:15px;font-weight:500}
+.result-points{font-size:13px;color:var(--color-text-secondary);margin-top:2px}
+.rarity-badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:var(--border-radius-md);margin-top:4px}
+.rarity-معمولی{background:#F1EFE8;color:#5F5E5A}
+.rarity-غیرمعمولی{background:#E6F1FB;color:#185FA5}
+.rarity-نایاب{background:#EEEDFE;color:#534AB7}
+.rarity-حماسی{background:#FAEEDA;color:#854F0B}
+.rarity-افسانه‌ای{background:#FBEAF0;color:#993556}
+.inv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.inv-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:.75rem;display:flex;align-items:center;gap:10px}
+.inv-card .ic{font-size:24px}
+.inv-card .info .name{font-size:13px;font-weight:500;line-height:1.3}
+.inv-card .info .qty{font-size:12px;color:var(--color-text-secondary)}
+.empty-state{text-align:center;padding:2rem;color:var(--color-text-secondary);font-size:14px}
+.weapon-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem;margin-bottom:.75rem;display:flex;align-items:center;gap:12px;cursor:pointer}
+.weapon-card.active-weapon{border-color:#1D9E75;background:#E1F5EE}
+.weapon-card .wic{font-size:28px}
+.weapon-card .winfo{flex:1}
+.weapon-card .wname{font-size:14px;font-weight:500}
+.weapon-card .wpow{font-size:12px;color:var(--color-text-secondary);margin-top:2px}
+.weapon-card .wbadge{font-size:11px;padding:2px 8px;border-radius:var(--border-radius-md);background:#E1F5EE;color:#0F6E56;font-weight:500}
+.event-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.25rem;margin-bottom:.75rem}
+.event-card h3{font-size:15px;font-weight:500;margin-bottom:.5rem;display:flex;align-items:center;gap:8px}
+.event-desc{font-size:13px;color:var(--color-text-secondary);margin-bottom:1rem}
+.milestone{display:flex;align-items:center;gap:10px;padding:.5rem 0;border-top:0.5px solid var(--color-border-tertiary)}
+.milestone:first-of-type{border-top:none}
+.ms-label{font-size:13px;flex:1}
+.ms-reward{font-size:13px;font-weight:500;color:#185FA5}
+.ms-status{font-size:12px;padding:2px 8px;border-radius:var(--border-radius-md)}
+.ms-done{background:#E1F5EE;color:#0F6E56}
+.ms-locked{background:#F1EFE8;color:#5F5E5A}
+.progress-bar{height:6px;background:var(--color-background-secondary);border-radius:3px;margin:.5rem 0}
+.progress-fill{height:100%;background:#185FA5;border-radius:3px}
+.casino-game-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem}
+.casino-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:.75rem;text-align:center;cursor:pointer}
+.casino-card:hover{background:var(--color-background-secondary)}
+.casino-card .cic{font-size:24px;margin-bottom:4px}
+.casino-card .cname{font-size:12px;font-weight:500}
+.casino-card .codds{font-size:11px;color:var(--color-text-secondary)}
+.casino-result{text-align:center;padding:1.5rem;background:var(--color-background-secondary);border-radius:var(--border-radius-lg);margin-top:1rem}
+.bet-row{display:flex;gap:6px;flex-wrap:wrap;margin:.75rem 0}
+.bet-btn{padding:.35rem .75rem;font-size:13px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);cursor:pointer;background:transparent;color:var(--color-text-primary)}
+.bet-btn.sel{background:#185FA5;color:#fff;border-color:#185FA5}
+.section-title{font-size:13px;color:var(--color-text-secondary);margin-bottom:.5rem;font-weight:500}
+</style>
+
+<div class="app">
+  <div class="header">
+    <div class="avatar">🏹</div>
+    <div>
+      <div style="font-size:17px;font-weight:500" id="username">شکارچی جنگل</div>
+      <div style="font-size:13px;color:var(--color-text-secondary)" id="user-level">سطح ۱ — مبتدی</div>
+    </div>
+    <div style="margin-right:auto;display:flex;align-items:center;gap:6px;font-size:15px;font-weight:500">
+      <i class="ti ti-coin" style="font-size:18px;color:#BA7517" aria-hidden="true"></i>
+      <span id="points-display">5000</span>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card"><div class="lbl">کل شکار</div><div class="val" id="total-hunts">0</div></div>
+    <div class="stat-card"><div class="lbl">درآمد</div><div class="val" id="total-earned">0</div></div>
+    <div class="stat-card"><div class="lbl">نادرترین</div><div class="val" id="rarest">—</div></div>
+    <div class="stat-card"><div class="lbl">برد کازینو</div><div class="val" id="casino-wins">0</div></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('hunt')"><i class="ti ti-crosshair" aria-hidden="true"></i> شکار</button>
+    <button class="tab" onclick="switchTab('inventory')"><i class="ti ti-package" aria-hidden="true"></i> انبار</button>
+    <button class="tab" onclick="switchTab('weapons')"><i class="ti ti-sword" aria-hidden="true"></i> سلاح‌ها</button>
+    <button class="tab" onclick="switchTab('events')"><i class="ti ti-calendar-event" aria-hidden="true"></i> ایونت</button>
+    <button class="tab" onclick="switchTab('casino')"><i class="ti ti-playing-card" aria-hidden="true"></i> کازینو</button>
+  </div>
+
+  <!-- HUNT -->
+  <div class="pane active" id="pane-hunt">
+    <div class="hunt-area">
+      <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:1rem">
+        <i class="ti ti-trees" aria-hidden="true"></i> جنگل اطراف خانه
+      </div>
+      <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:1rem" id="active-weapon-info">
+        سلاح فعال: <strong id="active-weapon-name">تیر و کمان چوبی</strong>
+      </div>
+      <button class="hunt-btn" id="hunt-btn" onclick="doHunt()">
+        <i class="ti ti-target-arrow" aria-hidden="true"></i> شکار کن!
+      </button>
+      <div class="cooldown-bar"><div class="cooldown-fill" id="cd-fill" style="width:100%"></div></div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-top:.5rem" id="cd-text"></div>
+    </div>
+    <div id="hunt-result"></div>
+  </div>
+
+  <!-- INVENTORY -->
+  <div class="pane" id="pane-inventory">
+    <div id="inv-content"><div class="empty-state">هنوز چیزی شکار نکردی!</div></div>
+  </div>
+
+  <!-- WEAPONS -->
+  <div class="pane" id="pane-weapons">
+    <div class="section-title" style="margin-bottom:.75rem">سلاح خود را انتخاب کن</div>
+    <div id="weapons-list"></div>
+  </div>
+
+  <!-- EVENTS -->
+  <div class="pane" id="pane-events">
+    <div id="events-content"></div>
+  </div>
+
+  <!-- CASINO -->
+  <div class="pane" id="pane-casino">
+    <div class="section-title">انتخاب بازی</div>
+    <div class="casino-game-grid" id="casino-games"></div>
+    <div id="casino-bet-area" style="display:none">
+      <div class="section-title">مقدار شرط‌بندی</div>
+      <div class="bet-row" id="bet-row"></div>
+      <button class="hunt-btn" id="play-btn" onclick="playCasino()" style="margin-top:.5rem">
+        <i class="ti ti-player-play" aria-hidden="true"></i> بازی کن!
+      </button>
+    </div>
+    <div id="casino-result-area"></div>
+  </div>
+</div>
+
+<script>
+const ANIMALS_FOREST = [
+  {key:"sparrow",name:"گنجشک کوچک",emoji:"🐦",min_power:1,weight:25,sell_value:4,rarity:"معمولی"},
+  {key:"pigeon",name:"کبوتر شهری",emoji:"🕊",min_power:1,weight:22,sell_value:6,rarity:"معمولی"},
+  {key:"mouse",name:"موش زرنگ جنگلی",emoji:"🐭",min_power:1,weight:20,sell_value:5,rarity:"معمولی"},
+  {key:"rabbit",name:"خرگوش دم‌پنبه‌ای",emoji:"🐇",min_power:1,weight:12,sell_value:20,rarity:"غیرمعمولی"},
+  {key:"squirrel",name:"سنجاب درختی",emoji:"🐿",min_power:1,weight:14,sell_value:26,rarity:"غیرمعمولی"},
+  {key:"cat_black",name:"گربه سیاه مرموز",emoji:"🐈‍⬛",min_power:1,weight:10,sell_value:25,rarity:"غیرمعمولی"},
+  {key:"fox",name:"روباه مکار سرخ",emoji:"🦊",min_power:3,weight:6,sell_value:110,rarity:"نایاب"},
+  {key:"wolf",name:"گرگ خاکستری تیزدندان",emoji:"🐺",min_power:7,weight:2,sell_value:260,rarity:"نایاب"},
+  {key:"eagle",name:"عقاب تیزبین کوهستان",emoji:"🦅",min_power:5,weight:6,sell_value:200,rarity:"نایاب"},
+  {key:"peacock",name:"طاووس رنگارنگ",emoji:"🦚",min_power:4,weight:4,sell_value:220,rarity:"نایاب"},
+  {key:"dragon",name:"اژدهای اساطیری",emoji:"🐲",min_power:10,weight:1,sell_value:2000,rarity:"افسانه‌ای"},
+  {key:"unicorn",name:"اسب تک‌شاخ نادر",emoji:"🦄",min_power:8,weight:1,sell_value:1500,rarity:"افسانه‌ای"},
+];
+
+const WEAPONS = [
+  {key:"stick",name:"چوب ساده",emoji:"🪵",power:1,desc:"ابزار مبتدی برای شکار حیوانات ساده"},
+  {key:"sling",name:"فلاخن",emoji:"🪃",power:3,desc:"دقیق‌تر از چوب، مناسب شکار روباه"},
+  {key:"bow",name:"تیر و کمان چوبی",emoji:"🏹",power:5,desc:"سلاح کلاسیک شکارچی، برای شکار عقاب"},
+  {key:"rifle",name:"تفنگ شکاری",emoji:"🔫",power:8,desc:"قدرتمند برای شکار گرگ و اسب تک‌شاخ"},
+  {key:"cannon",name:"توپ افسانه‌ای",emoji:"💥",power:12,desc:"شکار اژدها ممکن است!"},
+];
+
+const CASINO_GAMES = [
+  {key:"slots",name:"ماشین شانس",emoji:"🎰",odds:"۴۵٪",mult:3,desc:"سه نماد یکسان = ۳x"},
+  {key:"dice",name:"تاس",emoji:"🎲",odds:"۵۰٪",mult:1.9,desc:"عدد زوج = برد"},
+  {key:"coin",name:"سر یا خط",emoji:"🪙",odds:"۵۰٪",mult:1.95,desc:"۵۰/۵۰ ساده"},
+  {key:"card",name:"کارت مخفی",emoji:"🃏",odds:"۳۳٪",mult:2.8,desc:"یک از سه کارت برنده"},
+  {key:"roulette",name:"رولت",emoji:"🎡",odds:"۲٪",mult:36,desc:"جکپات بزرگ!"},
+  {key:"rps",name:"سنگ، کاغذ، قیچی",emoji:"✊",odds:"۵۰٪",mult:1.9,desc:"ببر تا برنده شوی"},
+];
+
+let state = {
+  points:5000,
+  totalHunts:0,
+  totalEarned:0,
+  rarestKey:null,
+  casinoWins:0,
+  inventory:{},
+  activeWeapon:"bow",
+  huntCooldown:0,
+  cdInterval:null,
+  selectedCasino:null,
+  selectedBet:100,
+  eventProgress:0,
+};
+
+const BETS = [10,50,100,500,1000];
+
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  document.getElementById('pane-'+name).classList.add('active');
+}
+
+function weaponPower(){
+  return WEAPONS.find(w=>w.key===state.activeWeapon)?.power||1;
+}
+
+function weightedRandom(list){
+  const total=list.reduce((s,a)=>s+a.weight,0);
+  let r=Math.random()*total;
+  for(const a of list){r-=a.weight;if(r<=0)return a;}
+  return list[list.length-1];
+}
+
+function doHunt(){
+  if(state.huntCooldown>0)return;
+  const power=weaponPower();
+  const available=ANIMALS_FOREST.filter(a=>a.min_power<=power);
+  const animal=weightedRandom(available);
+  state.totalHunts++;
+  state.totalEarned+=animal.sell_value;
+  state.points+=animal.sell_value;
+  state.inventory[animal.key]=(state.inventory[animal.key]||0)+1;
+  state.eventProgress++;
+  if(!state.rarestKey){state.rarestKey=animal.key;}
+  else{
+    const curRar=ANIMALS_FOREST.find(a=>a.key===state.rarestKey)?.sell_value||0;
+    if(animal.sell_value>curRar)state.rarestKey=animal.key;
+  }
+  const rEl=document.getElementById('hunt-result');
+  rEl.innerHTML=`<div class="result-box win">
+    <span class="result-emoji">${animal.emoji}</span>
+    <div class="result-name">${animal.name}</div>
+    <div class="result-points">+${animal.sell_value} سکه</div>
+    <span class="rarity-badge rarity-${animal.rarity}">${animal.rarity}</span>
+  </div>`;
+  updateDisplay();
+  updateInventory();
+  startCooldown(300);
+}
+
+function startCooldown(secs){
+  state.huntCooldown=secs;
+  const btn=document.getElementById('hunt-btn');
+  btn.disabled=true;
+  clearInterval(state.cdInterval);
+  state.cdInterval=setInterval(()=>{
+    state.huntCooldown--;
+    const pct=Math.round((state.huntCooldown/secs)*100);
+    document.getElementById('cd-fill').style.width=pct+'%';
+    document.getElementById('cd-text').textContent=`کول‌داون: ${state.huntCooldown} ثانیه`;
+    if(state.huntCooldown<=0){
+      clearInterval(state.cdInterval);
+      btn.disabled=false;
+      document.getElementById('cd-fill').style.width='100%';
+      document.getElementById('cd-text').textContent='آماده برای شکار!';
+    }
+  },1000);
+  document.getElementById('cd-fill').style.width='100%';
+  document.getElementById('cd-text').textContent=`کول‌داون: ${secs} ثانیه`;
+}
+
+function updateDisplay(){
+  document.getElementById('points-display').textContent=state.points.toLocaleString('fa');
+  document.getElementById('total-hunts').textContent=state.totalHunts;
+  document.getElementById('total-earned').textContent=state.totalEarned;
+  const rare=state.rarestKey?ANIMALS_FOREST.find(a=>a.key===state.rarestKey)?.emoji||'—':'—';
+  document.getElementById('rarest').textContent=rare;
+  document.getElementById('casino-wins').textContent=state.casinoWins;
+  renderEvents();
+}
+
+function updateInventory(){
+  const el=document.getElementById('inv-content');
+  const keys=Object.keys(state.inventory).filter(k=>state.inventory[k]>0);
+  if(!keys.length){el.innerHTML='<div class="empty-state">هنوز چیزی شکار نکردی!</div>';return;}
+  el.innerHTML='<div class="inv-grid">'+keys.map(k=>{
+    const a=ANIMALS_FOREST.find(x=>x.key===k);
+    if(!a)return'';
+    return`<div class="inv-card"><div class="ic">${a.emoji}</div><div class="info"><div class="name">${a.name}</div><div class="qty">×${state.inventory[k]} | ${a.sell_value} سکه</div></div></div>`;
+  }).join('')+'</div>';
+}
+
+function renderWeapons(){
+  const el=document.getElementById('weapons-list');
+  el.innerHTML=WEAPONS.map(w=>`
+    <div class="weapon-card${w.key===state.activeWeapon?' active-weapon':''}" onclick="selectWeapon('${w.key}')">
+      <div class="wic">${w.emoji}</div>
+      <div class="winfo">
+        <div class="wname">${w.name}</div>
+        <div class="wpow">قدرت: ${w.power} | ${w.desc}</div>
+      </div>
+      ${w.key===state.activeWeapon?'<span class="wbadge">فعال</span>':''}
+    </div>`).join('');
+}
+
+function selectWeapon(key){
+  state.activeWeapon=key;
+  const w=WEAPONS.find(x=>x.key===key);
+  document.getElementById('active-weapon-name').textContent=w.name;
+  renderWeapons();
+}
+
+function renderEvents(){
+  const el=document.getElementById('events-content');
+  const milestones=[
+    {target:10,reward:500,label:"۱۰ شکار"},
+    {target:50,reward:2000,label:"۵۰ شکار"},
+    {target:100,reward:5000,label:"۱۰۰ شکار"},
+  ];
+  const pct=Math.min(100,Math.round((state.eventProgress/100)*100));
+  el.innerHTML=`<div class="event-card">
+    <h3><span>🌟</span> شکارچی ستاره</h3>
+    <div class="event-desc">در بازه ایونت شکار کن و جوایز پله‌ای بگیر! پیشرفت: ${state.eventProgress}/100 شکار</div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    ${milestones.map(m=>{
+      const done=state.eventProgress>=m.target;
+      return`<div class="milestone">
+        <div class="ms-label">${m.label}</div>
+        <div class="ms-reward">+${m.reward.toLocaleString()} سکه</div>
+        <span class="ms-status ${done?'ms-done':'ms-locked'}">${done?'دریافت شد':'قفل'}</span>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function renderCasinoGames(){
+  const el=document.getElementById('casino-games');
+  el.innerHTML=CASINO_GAMES.map(g=>`
+    <div class="casino-card" onclick="selectCasino('${g.key}')">
+      <div class="cic">${g.emoji}</div>
+      <div class="cname">${g.name}</div>
+      <div class="codds">${g.odds} | ${g.mult}x</div>
+    </div>`).join('');
+}
+
+function selectCasino(key){
+  state.selectedCasino=key;
+  document.querySelectorAll('.casino-card').forEach(c=>{
+    c.style.border=c.onclick.toString().includes(key)?'1.5px solid #185FA5':'0.5px solid var(--color-border-tertiary)';
+  });
+  const area=document.getElementById('casino-bet-area');
+  area.style.display='block';
+  const row=document.getElementById('bet-row');
+  row.innerHTML=BETS.map(b=>`<button class="bet-btn${b===state.selectedBet?' sel':''}" onclick="selectBet(${b})">${b}</button>`).join('');
+  document.getElementById('casino-result-area').innerHTML='';
+}
+
+function selectBet(b){
+  state.selectedBet=b;
+  document.querySelectorAll('.bet-btn').forEach(el=>{
+    el.className='bet-btn'+(parseInt(el.textContent)===b?' sel':'');
+  });
+}
+
+function playCasino(){
+  if(!state.selectedCasino)return;
+  const bet=state.selectedBet;
+  if(state.points<bet){
+    document.getElementById('casino-result-area').innerHTML='<div class="casino-result">سکه کافی نداری! اول بیشتر شکار کن.</div>';
+    return;
+  }
+  const game=CASINO_GAMES.find(g=>g.key===state.selectedCasino);
+  const winChance={'slots':0.45,'dice':0.5,'coin':0.5,'card':0.33,'roulette':0.027,'rps':0.5}[game.key]||0.5;
+  const isWin=Math.random()<winChance;
+  state.points-=bet;
+  let msg='',profit=0;
+  if(isWin){
+    profit=Math.round(bet*game.mult);
+    state.points+=profit;
+    state.totalEarned+=profit-bet;
+    state.casinoWins++;
+    msg=`<div style="font-size:28px;margin-bottom:.5rem">${game.emoji}</div>
+      <div style="font-size:16px;font-weight:500;color:#0F6E56">برنده شدی!</div>
+      <div style="font-size:13px;color:var(--color-text-secondary);margin-top:.25rem">+${(profit-bet).toLocaleString()} سکه سود — ضریب ${game.mult}x</div>`;
+  } else {
+    msg=`<div style="font-size:28px;margin-bottom:.5rem">😔</div>
+      <div style="font-size:16px;font-weight:500">باختی...</div>
+      <div style="font-size:13px;color:var(--color-text-secondary);margin-top:.25rem">-${bet} سکه</div>`;
+  }
+  document.getElementById('casino-result-area').innerHTML=`<div class="casino-result">${msg}</div>`;
+  updateDisplay();
+}
+
+renderWeapons();
+renderCasinoGames();
+renderEvents();
+document.getElementById('active-weapon-name').textContent=WEAPONS.find(w=>w.key===state.activeWeapon)?.name||'';
+document.getElementById('cd-text').textContent='آماده برای شکار!';
+</script>
